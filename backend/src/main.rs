@@ -31,24 +31,26 @@ async fn handle_contact(Json(payload): Json<ContactForm>) -> impl IntoResponse {
 
 #[tokio::main]
 async fn main() {
-    // 1. Fix the path to your frontend folder
-   let serve_dir = ServeDir::new("../frontend")
-        .append_index_html_on_directories(true); 
+    // Get frontend path from environment or use relative fallback
+    let frontend_path = std::env::var("FRONTEND_PATH")
+        .unwrap_or_else(|_| "../frontend".to_string());
+    
+    let serve_dir = ServeDir::new(&frontend_path)
+        .append_index_html_on_directories(true);
 
     let app = Router::new()
         .route("/api", get(index))
         .route("/api/contact", post(handle_contact))
-        .fallback_service(serve_dir) // Use fallback so it doesn't panic
+        .fallback_service(serve_dir);
 
-    // 2. IMPORTANT: Railway provides the port via an environment variable
     let port = std::env::var("PORT")
         .unwrap_or_else(|_| "8080".to_string())
         .parse::<u16>()
         .unwrap();
 
-    // 3. Bind to 0.0.0.0 so the outside world can see it
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     println!("Listening on http://{}", addr);
+    println!("Serving frontend from: {}", frontend_path);
 
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();

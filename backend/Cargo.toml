@@ -8,7 +8,8 @@ tokio = { version = "1.0", features = ["full"] }
 axum = "0.8"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-tower = "0.4"
-tower-http = { version = "0.3", features = ["serve-dir", "cors"] }
+tower = "0.5"
+# FIX: Change "serve-dir" to "fs"
+tower-http = { version = "0.6", features = ["fs", "cors"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt"] }

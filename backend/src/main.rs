@@ -5,7 +5,7 @@ use axum::{
     response::IntoResponse,
 };
 use serde::Deserialize;
-use std::{net::SocketAddr};
+use std::net::SocketAddr;
 use tower_http::services::ServeDir;
 
 #[derive(Deserialize)]
@@ -16,7 +16,7 @@ struct ContactForm {
 }
 
 async fn index() -> impl IntoResponse {
-    "Welcome to Kitso’s Portfolio Backend!"
+    "Welcome to Kitso's Portfolio Backend!"
 }
 
 async fn handle_contact(Json(payload): Json<ContactForm>) -> impl IntoResponse {
@@ -31,11 +31,22 @@ async fn handle_contact(Json(payload): Json<ContactForm>) -> impl IntoResponse {
 
 #[tokio::main]
 async fn main() {
-    // Get frontend path from environment or use relative fallback
-    let frontend_path = std::env::var("FRONTEND_PATH")
-        .unwrap_or_else(|_| "../frontend".to_string());
+    // Try multiple possible locations for frontend files
+    let possible_paths = vec![
+        "../frontend",
+        "./frontend", 
+        "/app/frontend",
+        "/workspace/frontend",
+    ];
     
-    let serve_dir = ServeDir::new(&frontend_path)
+    let frontend_path = possible_paths.iter()
+        .find(|path| std::path::Path::new(path).exists())
+        .unwrap_or(&"../frontend");
+    
+    println!("🔍 Serving frontend from: {}", frontend_path);
+    println!("📂 Directory exists: {}", std::path::Path::new(frontend_path).exists());
+    
+    let serve_dir = ServeDir::new(frontend_path)
         .append_index_html_on_directories(true);
 
     let app = Router::new()
@@ -49,8 +60,7 @@ async fn main() {
         .unwrap();
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
-    println!("Listening on http://{}", addr);
-    println!("Serving frontend from: {}", frontend_path);
+    println!("🚀 Listening on http://{}", addr);
 
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();

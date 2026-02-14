@@ -46,9 +46,9 @@ async fn main() {
     println!("🔍 Serving frontend from: {}", frontend_path);
     println!("📂 Directory exists: {}", std::path::Path::new(frontend_path).exists());
     
-    let serve_dir = ServeDir::new(frontend_path)
-        .append_index_html_on_directories(true);
-
+    let serve_dir = ServeDir::new("frontend")
+    .append_index_html_on_directories(true);
+    
     let app = Router::new()
         .route("/api", get(index))
         .route("/api/contact", post(handle_contact))

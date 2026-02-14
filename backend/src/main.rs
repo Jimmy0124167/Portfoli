@@ -32,7 +32,7 @@ async fn handle_contact(Json(payload): Json<ContactForm>) -> impl IntoResponse {
 #[tokio::main]
 async fn main() {
     // 1. Fix the path to your frontend folder
-   let serve_dir = ServeDir::new("frontend")
+   let serve_dir = ServeDir::new("../frontend")
         .append_index_html_on_directories(true); 
 
     let app = Router::new()

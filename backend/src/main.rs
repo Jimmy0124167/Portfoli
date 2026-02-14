@@ -32,18 +32,21 @@ async fn handle_contact(Json(payload): Json<ContactForm>) -> impl IntoResponse {
 #[tokio::main]
 async fn main() {
     // Serve frontend files
-    let serve_dir = ServeDir::new("../frontend");
+    let serve_dir = ServeDir::new("frontend"); // Make sure this matches your folder name
 
     let app = Router::new()
-        .route("/api", get(index))
         .route("/api/contact", post(handle_contact))
-        .nest_service("/", serve_dir);
+        .fallback_service(serve_dir);
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
-    println!("🚀 Server running on http://{}", addr);
-
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
+    // FIX: Look for a PORT provided by the host, default to 8080 locally
+    let port = std::env::var("PORT")
+        .unwrap_or_else(|_| "8080".to_string())
+        .parse::<u16>()
         .unwrap();
+
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
+    println!("Server listening on {}", addr);
+
+    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }

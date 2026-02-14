@@ -32,13 +32,13 @@ async fn handle_contact(Json(payload): Json<ContactForm>) -> impl IntoResponse {
 #[tokio::main]
 async fn main() {
     // 1. Fix the path to your frontend folder
-    let serve_dir = ServeDir::new("frontend")
-    .append_index_html_on_directories(true);
-    
+   let serve_dir = ServeDir::new("frontend")
+        .append_index_html_on_directories(true); 
+
     let app = Router::new()
         .route("/api", get(index))
         .route("/api/contact", post(handle_contact))
-        .fallback_service(serve_dir); // Use fallback so it doesn't panic
+        .fallback_service(serve_dir) // Use fallback so it doesn't panic
 
     // 2. IMPORTANT: Railway provides the port via an environment variable
     let port = std::env::var("PORT")

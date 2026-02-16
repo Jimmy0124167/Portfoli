@@ -31,37 +31,32 @@ async fn handle_contact(Json(payload): Json<ContactForm>) -> impl IntoResponse {
 
 #[tokio::main]
 async fn main() {
-    // Try multiple possible locations for frontend files
-    let possible_paths = vec![
-        "../frontend",
-        "./frontend", 
-        "/app/frontend",
-        "/workspace/frontend",
-    ];
-    
-    let frontend_path = possible_paths.iter()
-        .find(|path| std::path::Path::new(path).exists())
-        .unwrap_or(&"../frontend");
-    
-    println!("🔍 Serving frontend from: {}", frontend_path);
-    println!("📂 Directory exists: {}", std::path::Path::new(frontend_path).exists());
-    
-   let serve_dir = ServeDir::new("frontend")
-    .append_index_html_on_directories(true);
-    
+    // Serve static files from the frontend directory
+    let serve_dir = ServeDir::new("frontend")
+        .append_index_html_on_directories(true);
+
     let app = Router::new()
         .route("/api", get(index))
         .route("/api/contact", post(handle_contact))
         .fallback_service(serve_dir);
 
+    // Railway provides PORT via environment variable
     let port = std::env::var("PORT")
         .unwrap_or_else(|_| "8080".to_string())
         .parse::<u16>()
-        .unwrap();
+        .expect("PORT must be a valid number");
 
+    // Bind to 0.0.0.0 so Railway can access it
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
-    println!("🚀 Listening on http://{}", addr);
+    
+    println!("🚀 Server listening on http://{}", addr);
+    println!("📂 Serving frontend from: ./frontend");
 
-    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    let listener = tokio::net::TcpListener::bind(&addr)
+        .await
+        .expect("Failed to bind to address");
+        
+    axum::serve(listener, app)
+        .await
+        .expect("Failed to start server");
 }

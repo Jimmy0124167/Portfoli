@@ -111,3 +111,32 @@ function showResponse(message, type) {
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
+```
+
+## 4. **.gitignore** (goes in project root)
+```
+# Rust
+/backend/target/
+/backend/**/*.rs.bk
+/backend/Cargo.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+
+# Railway
+.railway/
